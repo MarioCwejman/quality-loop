@@ -42,7 +42,7 @@ rendered result instead of the intent, and skills that capture knowledge where i
 
 ```
 claude plugin marketplace add <path-to-this-repo>/dist
-claude plugin install quality-loop@mario-local
+claude plugin install quality-loop@mario-cwejman
 ```
 
 Requires **Node.js** on `PATH` for the hooks. Language checkers are optional — each hook

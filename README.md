@@ -10,7 +10,8 @@ knowledge where it survives past the session.
 The thing it is actually built to stop: Claude ending a turn saying something works when
 nothing has been run.
 
-**[Read the manual →](site/guide.html)** · built as a static site in [`site/`](site/)
+**[Read the manual](https://GH_USER.github.io/quality-loop/guide.html)** — or the
+[overview](https://GH_USER.github.io/quality-loop/). Source in [`docs/`](docs/).
 
 ---
 
@@ -20,13 +21,21 @@ Requires [Node.js](https://nodejs.org) on your `PATH` for the hooks. Language ch
 optional — each is skipped when the tool is absent rather than failing.
 
 ```bash
-git clone https://github.com/<your-username>/quality-loop.git
+git clone https://github.com/GH_USER/quality-loop.git
 cd quality-loop
 claude plugin marketplace add ./dist
-claude plugin install quality-loop@mario-local
+claude plugin install quality-loop@mario-cwejman
 ```
 
 Then start a new session — skills, agents and hooks are read when a session opens.
+
+Check what landed:
+
+```bash
+claude plugin details quality-loop@mario-cwejman
+```
+
+Four skills, three agents and three hook events.
 
 ### Also copy the global layer
 

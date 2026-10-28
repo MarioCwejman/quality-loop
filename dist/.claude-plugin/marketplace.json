@@ -1,11 +1,11 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "mario-local",
+  "name": "mario-cwejman",
   "owner": {
     "name": "Mario Cwejman"
   },
   "metadata": {
-    "description": "Local marketplace for personally maintained Claude Code plugins.",
+    "description": "Claude Code plugins by Mario Cwejman.",
     "version": "0.1.0"
   },
   "plugins": [
