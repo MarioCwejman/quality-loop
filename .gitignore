@@ -1,0 +1,21 @@
+# Auto-generated per-machine permission allowlist. It accumulates absolute home
+# paths and the names of unrelated local projects, so it never goes public.
+.claude/settings.local.json
+.claude/
+
+# Screenshots captured during review runs — these are of private projects.
+.playwright-mcp/
+
+# Scratch output from hook testing.
+r1.json
+*.tmp
+out.json
+
+# OS cruft
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# The original design brief. Personal context rather than project docs — keep local
+# unless you decide otherwise.
+claude-workflow-handoff.md

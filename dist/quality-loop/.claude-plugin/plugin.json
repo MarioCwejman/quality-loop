@@ -1,0 +1,17 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "quality-loop",
+  "version": "0.1.0",
+  "description": "Verification-first working layer: hooks that gate edits on real syntax checks, reviewer agents that look at the rendered result, and skills for onboarding a repo, capturing references and running retros.",
+  "author": {
+    "name": "Mario Cwejman"
+  },
+  "keywords": [
+    "verification",
+    "code-review",
+    "design-review",
+    "onboarding",
+    "hooks"
+  ],
+  "license": "MIT"
+}

@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>quality-loop</title>
+<meta name="description" content="A layer for Claude Code that checks every file as it is written and holds the session open until edited code has actually been run.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23141413'/%3E%3Cpath d='M8 17l5 5 11-11' stroke='%23f0eee6' stroke-width='3' fill='none'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<header class="wrap">
+  <div class="masthead">
+    <div class="nav-group left">
+      <a class="pill" href="index.html" aria-current="page">Overview</a>
+      <a class="pill" href="guide.html">Manual</a>
+    </div>
+    <a class="wordmark" href="index.html">QUALITY<span class="slash">\</span>LOOP</a>
+    <div class="nav-group right">
+      <a class="pill" href="guide.html#install">Install</a>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <section class="wrap hero">
+    <h1>Claude can tell you it works before anything has run.
+      <span class="cont">This layer checks every file as it is written, and won’t let a session end until the code has actually been run.</span>
+    </h1>
+    <p class="hero-sub">Four hooks, three reviewers and four skills for Claude Code. Two commands to install. Needs Node on your PATH.</p>
+  </section>
+
+  <section class="wrap">
+    <div class="terminal">
+<pre><span class="dim">$ claude</span>
+<span class="dim">…</span>
+<span class="halt">●</span> <span class="label">Stop hook — blocked</span>
+
+  These files were written this session and nothing was ever
+  run against them:
+
+    - build-plugin.sh
+
+  Do not finish on an unverified change. Pick the evidence
+  that fits:
+
+    <span class="dim">logic</span>   the project's own test command
+    <span class="dim">UI</span>      take a screenshot and actually look at it
+    <span class="dim">minimum</span> the syntax gate for the language
+
+<span class="term-step"><span class="dim">$ bash -n build-plugin.sh</span>
+<span class="ok">✓</span> syntax OK</span>
+
+<span class="term-step late"><span class="dim">$ bash build-plugin.sh</span>
+<span class="ok">✓</span> built, validation passed, exit 0</span></pre>
+    </div>
+    <p class="term-caption">Real output, from packaging this plugin. The session could not end until the script had actually been run.</p>
+  </section>
+
+  <section class="band">
+    <div class="wrap">
+      <h2>What actually changes</h2>
+      <p class="band-intro">The same work, with the plugin installed and without it.</p>
+
+      <div class="compare">
+        <div class="compare-col before">
+          <h3>Default Claude Code</h3>
+          <ul>
+            <li>Can end a turn saying it works, having run nothing</li>
+            <li>A syntax error surfaces three edits later</li>
+            <li>Describes the interface it just built</li>
+            <li>You re-explain the project’s stack every time</li>
+            <li>May create a file that silently disables your <code>AGENTS.md</code></li>
+            <li>Lessons disappear when the session ends</li>
+          </ul>
+        </div>
+        <div class="compare-col after">
+          <h3>With quality-loop</h3>
+          <ul>
+            <li>Blocked from finishing if it edited code and ran nothing</li>
+            <li>The language’s own checker runs on every file write</li>
+            <li>A separate reviewer opens the page and looks at it</li>
+            <li><code>/bootstrap</code> detects the stack and writes the rules once</li>
+            <li>Warned at session start; bootstrap refuses to create one</li>
+            <li><code>/retro</code> promotes a lesson to a rule on its second occurrence</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band sunk">
+    <div class="wrap">
+      <h2>What’s in it</h2>
+      <p class="band-intro">Eleven pieces in three groups. The hooks run by themselves; the reviewers and skills wait until you need them.</p>
+
+      <h3 class="inv-group">Hooks — these run on their own</h3>
+      <div class="inventory">
+        <div class="inv-item">
+          <svg class="inv-mark" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="square"><path d="M5 3h9l5 5v13H5z"/><path d="M8.5 13.5l2.5 2.5 4.5-5"/></svg>
+          <h3>verify-edit</h3>
+          <p class="inv-when">after every file write</p>
+          <p>Runs the real checker for that language — Node, Python, shell, Luau, TypeScript — and reports what it found. It won’t reformat your file or block you.</p>
+        </div>
+        <div class="inv-item">
+          <svg class="inv-mark" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="square"><path d="M15 4v16"/><path d="M4 12h7"/><path d="M8 9l3 3-3 3"/></svg>
+          <h3>stop-gate</h3>
+          <p class="inv-when">when Claude tries to finish</p>
+          <p>Refuses the ending if code was edited and no test, gate or screenshot was ever run against it.</p>
+        </div>
+        <div class="inv-item">
+          <svg class="inv-mark" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="square"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
+          <h3>track-verification</h3>
+          <p class="inv-when">after every command</p>
+          <p>Notices when something real was run, so the stop-gate knows the work was checked and stays quiet.</p>
+        </div>
+        <div class="inv-item">
+          <svg class="inv-mark" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="square"><path d="M14 4h6v16h-6"/><path d="M3 12h10"/><path d="M10 8.5l3.5 3.5L10 15.5"/></svg>
+          <h3>session-start</h3>
+          <p class="inv-when">when a session opens</p>
+          <p>Warns if a <code>CLAUDE.md</code> is suppressing your <code>AGENTS.md</code>, and suggests <code>/bootstrap</code> in a project with no setup.</p>
+        </div>
+      </div>
+
+      <h3 class="inv-group">Reviewers — a second opinion on work they didn’t write</h3>
+      <div class="inventory">
+        <div class="inv-item">
+          <svg class="inv-mark" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="square"><path d="M3 6h18v12H3z"/><circle cx="12" cy="12" r="3.2"/></svg>
+          <h3>art-director</h3>
+          <p class="inv-when">after visual work</p>
+          <p>Opens the running page, captures it at two widths, and judges it against your project’s own brief. It reports back rather than editing.</p>
+        </div>
+        <div class="inv-item">
+          <svg class="inv-mark" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="square"><path d="M8 8l-4 4 4 4"/><path d="M16 8l4 4-4 4"/><path d="M13.5 5l-3 14"/></svg>
+          <h3>code-reviewer</h3>
+          <p class="inv-when">before committing</p>
+          <p>Reviews the local working tree. Needs no GitHub remote, so it works on a repo that never leaves your machine.</p>
+        </div>
+        <div class="inv-item">
+          <svg class="inv-mark" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="square"><path d="M10 3h4v4h-4z"/><path d="M3 17h4v4H3z"/><path d="M17 17h4v4h-4z"/><path d="M12 7v5"/><path d="M5 17v-5h14v5"/></svg>
+          <h3>luau-reviewer</h3>
+          <p class="inv-when">after Roblox scripts</p>
+          <p>Remote boundaries, instance lifetime, Rojo tree correctness. It turns down non-Roblox Lua, which is a different language.</p>
+        </div>
+      </div>
+
+      <h3 class="inv-group">Skills — type the slash command when you want them</h3>
+      <div class="inventory">
+        <div class="inv-item">
+          <svg class="inv-mark" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="square"><path d="M3 3h8v8H3z"/><path d="M13 3h8v8h-8z"/><path d="M3 13h8v8H3z"/><path d="M17 15v4"/><path d="M15 17h4"/></svg>
+          <h3>/bootstrap</h3>
+          <p class="inv-when">once per project</p>
+          <p>Detects the stack, asks a few questions, and writes a tailored setup. Six profiles: Roblox, Node, Python, .NET, static sites, unknown.</p>
+        </div>
+        <div class="inv-item">
+          <svg class="inv-mark" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="square"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v4h-4"/></svg>
+          <h3>/retro</h3>
+          <p class="inv-when">after a rough session</p>
+          <p>Turns a recurring problem into a rule, but only after it has happened twice, and writes it at the narrowest scope that still holds.</p>
+        </div>
+        <div class="inv-item">
+          <svg class="inv-mark" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="square"><path d="M12 3v10"/><path d="M8 9.5l4 4 4-4"/><path d="M4 16v5h16v-5"/></svg>
+          <h3>/ingest</h3>
+          <p class="inv-when">when you find a reference</p>
+          <p>Files a screenshot, link or observation into your notes vault with its source, and writes down the part you can reuse.</p>
+        </div>
+        <div class="inv-item">
+          <svg class="inv-mark" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="square"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/><path d="M7.5 10.5h6"/></svg>
+          <h3>/vault-lint</h3>
+          <p class="inv-when">when the inbox builds up</p>
+          <p>Audits those notes for missing sources, stale captures and duplicates. Reports and proposes; never curates on its own.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap">
+      <h2>What it found on the first real project</h2>
+      <div class="prose">
+        <p>A Path of Exile 2 build tool with a pinned calculation engine. Its test suite had been reporting a clean run for months.</p>
+        <p>The vendored engine directory was owned by a different Windows account, so <code>git</code> refused to read it, so the commit-pin check raised inside <code>setUpClass</code> — which aborts an entire test class before any of its tests run. The suite reported on what was left and said nothing about the rest.</p>
+      </div>
+
+      <div class="evidence">
+        <div class="stat">
+          <span class="num was">149</span>
+          <p>tests reported before, 32 of them erroring</p>
+        </div>
+        <div class="stat">
+          <span class="num now">247</span>
+          <p>tests actually there, all passing once the cause was fixed</p>
+        </div>
+        <div class="stat">
+          <span class="num">98</span>
+          <p>tests that had never run at all, and never appeared in a count</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band sunk">
+    <div class="wrap">
+      <h2>Install</h2>
+      <p class="band-intro">Two commands. The first tells Claude Code where to look, the second installs from there.</p>
+      <pre class="cmd"><span class="dim"># from the folder holding this plugin</span>
+claude plugin marketplace add ./dist
+claude plugin install quality-loop@mario-local</pre>
+      <p class="prose cta-row"><a class="pill" href="guide.html#install">Read the manual</a></p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-row">
+    <span>quality-loop 0.1.0 — MIT</span>
+    <a href="guide.html">Manual</a>
+    <a href="guide.html#limits">Known limits</a>
+    <span class="muted">Documentation for the plugin in <code>dist/</code>.</span>
+  </div>
+</footer>
+
+</body>
+</html>

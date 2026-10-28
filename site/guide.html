@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>quality-loop — manual</title>
+<meta name="description" content="How to install quality-loop, what each hook, reviewer and skill does, and what to do when one of them misbehaves.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23141413'/%3E%3Cpath d='M8 17l5 5 11-11' stroke='%23f0eee6' stroke-width='3' fill='none'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<header class="wrap">
+  <div class="masthead">
+    <div class="nav-group left">
+      <a class="pill" href="index.html">Overview</a>
+      <a class="pill" href="guide.html" aria-current="page">Manual</a>
+    </div>
+    <a class="wordmark" href="index.html">QUALITY<span class="slash">\</span>LOOP</a>
+    <div class="nav-group right">
+      <a class="pill" href="#trouble">Something’s wrong</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap guide">
+
+  <aside class="toc">
+    <nav aria-label="Manual sections">
+      <a href="#install">Install</a>
+      <a href="#hooks">The four hooks</a>
+      <a href="#satisfy">Satisfying the gate</a>
+      <a href="#reviewers">The reviewers</a>
+      <a href="#skills">The skills</a>
+      <a href="#trouble">When something’s wrong</a>
+      <a href="#limits">Known limits</a>
+    </nav>
+  </aside>
+
+  <div class="guide-body">
+
+    <section id="install">
+      <h2>Install</h2>
+      <p class="lede section-lede">Two commands, then restart the session.</p>
+
+      <ol class="steps">
+        <li>
+          <h3>Check Node is available</h3>
+          <p>Every hook is a small Node script. If this prints a version you’re fine; if it doesn’t, install Node first — nothing else will work.</p>
+          <pre class="cmd">node --version</pre>
+        </li>
+        <li>
+          <h3>Point Claude Code at the folder</h3>
+          <p>Run this from the directory that contains <code>dist/</code>. It registers a local marketplace — just a folder Claude Code knows to look in.</p>
+          <pre class="cmd">claude plugin marketplace add ./dist</pre>
+        </li>
+        <li>
+          <h3>Install the plugin</h3>
+          <pre class="cmd">claude plugin install quality-loop@mario-local</pre>
+          <p>Check what landed:</p>
+          <pre class="cmd">claude plugin details quality-loop@mario-local</pre>
+          <p>You should see four skills, three agents and three hook events.</p>
+        </li>
+        <li>
+          <h3>Start a new session</h3>
+          <p>Skills, agents and hooks are read when a session opens. Nothing you just installed is visible to a session already running.</p>
+        </li>
+      </ol>
+
+      <div class="notice warn">
+        <p><strong>If you already set these up by hand, remove them first.</strong> Hooks declared in <code>~/.claude/settings.json</code> and hooks from a plugin both fire. With both in place every file write gets checked twice and the stop-gate runs twice. Delete the <code>hooks</code> block from <code>settings.json</code>, or leave the plugin disabled and keep using the hand-installed copy.</p>
+      </div>
+    </section>
+
+    <section id="hooks">
+      <h2>The four hooks</h2>
+      <p>These run by themselves. You never invoke them, and three of the four are silent unless something needs saying.</p>
+
+      <div class="table-scroll">
+        <table class="ref">
+          <thead>
+            <tr><th>Hook</th><th>Runs</th><th>What it does</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>verify-edit</code></td>
+              <td>after a file is written</td>
+              <td>Runs that language’s syntax checker and reports problems. Report-only: it never blocks and never reformats, because rewriting a file Claude just wrote breaks its next edit.</td>
+            </tr>
+            <tr>
+              <td><code>track-verification</code></td>
+              <td>after a command or MCP tool</td>
+              <td>Records that something real was run. Silent always — it exists so the stop-gate knows your work was checked.</td>
+            </tr>
+            <tr>
+              <td><code>stop-gate</code></td>
+              <td>when Claude tries to end its turn</td>
+              <td>Blocks the ending if code was edited and nothing was run against it. The only hook that can interrupt you.</td>
+            </tr>
+            <tr>
+              <td><code>session-start</code></td>
+              <td>on open, resume or clear</td>
+              <td>Reports an <code>AGENTS.md</code> being suppressed, suggests <code>/bootstrap</code> in a project with no setup, and mentions a notes inbox once it passes ten items.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Which checker runs</h3>
+      <p><code>verify-edit</code> picks by file extension, and only runs a tool that is actually installed. A missing tool is skipped silently rather than reported as a failure.</p>
+      <ul>
+        <li><code>.js</code> <code>.cjs</code> <code>.mjs</code> — <code>node --check</code></li>
+        <li><code>.py</code> — a syntax-only parse that writes no <code>__pycache__</code></li>
+        <li><code>.sh</code> <code>.bash</code> — <code>bash -n</code></li>
+        <li><code>.luau</code> <code>.lua</code> — <code>luau-lsp analyze</code>, but only in a project that is genuinely Roblox</li>
+        <li><code>.json</code> — parsed, so a trailing comma is caught immediately</li>
+      </ul>
+      <p>For tools a project can adopt or not — a formatter, a linter — the hook looks for the config file first and stays out of it if there isn’t one. It will not introduce a tool you never chose.</p>
+    </section>
+
+    <section id="satisfy">
+      <h2>Satisfying the gate</h2>
+      <p>The stop-gate is the piece you’ll actually interact with, so it’s worth knowing what clears it.</p>
+
+      <p>Anything that genuinely exercises the code counts: a test runner, a build, a type-check, a linter, running the script directly, or a screenshot through a browser tool. Reading a file doesn’t count. Neither does <code>git status</code>.</p>
+
+      <div class="table-scroll">
+        <table class="ref">
+          <thead><tr><th>Counts</th><th>Doesn’t count</th></tr></thead>
+          <tbody>
+            <tr><td><code>npm test</code>, <code>pytest</code>, <code>cargo test</code>, <code>go test</code></td><td><code>ls</code>, <code>cat</code>, <code>git status</code></td></tr>
+            <tr><td><code>node --check x.js</code>, <code>bash -n x.sh</code></td><td>opening the file</td></tr>
+            <tr><td><code>python x.py</code>, <code>node x.mjs</code>, <code>bash x.sh</code></td><td>describing what the change does</td></tr>
+            <tr><td>a browser screenshot</td><td>saying it should work</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>When you genuinely can’t verify</h3>
+      <p>Sometimes there’s nothing to run — the change needs Roblox Studio open, or credentials you don’t have, or hardware that isn’t here. That’s a legitimate ending. Claude should say so in one line and stop, rather than claiming it works.</p>
+      <p>The gate exists to catch verification that was skipped, not to make you run something for its own sake.</p>
+    </section>
+
+    <section id="reviewers">
+      <h2>The reviewers</h2>
+      <p>Three agents that read your code but didn’t write it. Claude pulls them in on its own when the work matches; you can also ask for one by name.</p>
+
+      <h3>art-director</h3>
+      <p>Use this when a screen looks templated, or when you want to know whether it matches the brief. It opens the running page, captures it at two widths, reads your project’s brief and reports against it. It does not edit anything.</p>
+      <p>It needs the page actually running, so start your dev server first. If it can’t capture a screenshot it says so, rather than reading the source and implying it looked.</p>
+
+      <h3>code-reviewer</h3>
+      <p>Reviews uncommitted work in your local tree. Useful on a repo with no GitHub remote, where a PR-based review isn’t an option.</p>
+
+      <h3>luau-reviewer</h3>
+      <p>Roblox-specific: remote boundaries, instance lifetime, whether the Rojo tree maps the way you expect. It declines non-Roblox Lua, because a LuaJIT or Love2D file is a different language with different rules.</p>
+    </section>
+
+    <section id="skills">
+      <h2>The skills</h2>
+      <p>These wait until you ask. Type the slash command.</p>
+
+      <h3>/bootstrap</h3>
+      <p>Run this once in a new project. It detects the stack, asks a few short questions, and writes a setup tailored to what’s actually there — not a template.</p>
+      <p>What it will not do: create a <code>CLAUDE.md</code> in a repo that has an <code>AGENTS.md</code>, because that silently switches the <code>AGENTS.md</code> off. It also won’t add a formatter, linter or framework the project hasn’t already adopted, and it will tell you what it chose not to generate and why.</p>
+      <p>Six profiles ship with it: Roblox/Luau, Node web, Python, .NET, static sites, and one for a project it can’t place.</p>
+
+      <h3>/retro</h3>
+      <p>Run after a session that went badly. It looks at what actually went wrong and proposes changes.</p>
+      <p>Most of its value is in what it declines to do. A problem seen once is recorded as an observation and nothing else changes. It becomes a rule only on a <em>second, independent</em> occurrence, and it is written at the narrowest level that still holds — a quirk from one project, promoted to a global rule, becomes wrong advice in the next one. It also proposes deletions, which matters: an out-of-date rule still gets followed.</p>
+
+      <h3>/ingest</h3>
+      <p>For capturing a reference — a screenshot, a link, an observation — into your notes vault. It records where the thing came from and writes down the part you can reuse, so the file still means something in three months.</p>
+
+      <h3>/vault-lint</h3>
+      <p>Audits those notes: missing sources, captures that have sat unfiled for weeks, broken links, duplicates. It reports and proposes; it won’t file or delete anything on its own.</p>
+    </section>
+
+    <section id="trouble">
+      <h2>When something’s wrong</h2>
+
+      <h3>Claude says something confidently wrong about your project</h3>
+      <p>Check the rules first. A path-scoped rule that matches too broadly will pull in advice meant for a different stack — Roblox guidance landing on a LuaJIT file, for instance. Ask which rules are loaded and look in the project’s <code>.claude/rules/</code>. This is easy to miss, because a misfiring rule looks the same as Claude simply being wrong.</p>
+
+      <h3>Everything seems to happen twice</h3>
+      <p>You have hooks in both <code>settings.json</code> and the plugin. Keep one.</p>
+
+      <h3>A skill or agent you just added isn’t there</h3>
+      <p>They’re loaded when a session starts. Restart the session.</p>
+
+      <h3>The gate won’t let you finish and there’s nothing to run</h3>
+      <p>Say so — that is an accepted ending. If it keeps firing on files that <em>were</em> run, the pattern list in <code>track-verification</code> doesn’t recognise your command yet. Worth fixing rather than working around, or the gate stops being worth listening to.</p>
+
+      <h3>A hook reports a file that plainly exists</h3>
+      <p>On Windows, <code>bash</code> may resolve to WSL’s copy rather than Git Bash, and WSL reads a <code>C:/…</code> argument as a Linux path. The shell gate avoids this by passing scripts on standard input instead of by path.</p>
+    </section>
+
+    <section id="limits">
+      <h2>Known limits</h2>
+      <p>What this does not do.</p>
+
+      <h3>It can’t carry your rules or your global instructions</h3>
+      <p>A plugin can hold skills, agents, commands, hooks and MCP servers. There is no mechanism for <code>rules/</code> or a global <code>CLAUDE.md</code>, so those still have to be copied by hand onto a new machine. This is most of a setup, not all of one.</p>
+
+      <h3>The packaged hooks have not been run end to end</h3>
+      <p>The plugin’s structure validates and its inventory loads correctly. The hook scripts are well tested on their own, but have not been run from inside a plugin, where their paths resolve differently. Until they have, keeping the plugin disabled and using the hand-installed copies is safer.</p>
+
+      <h3>It adds latency and context</h3>
+      <p>A checker runs on every file write — usually well under a second, occasionally a few. The components also cost roughly 980 tokens in every session before you do anything. Small, but not nothing.</p>
+
+      <h3>Rules decay</h3>
+      <p>Guidance that was true when written stops being true. <code>/retro</code> prunes, but only when you run it. So the maintenance is reactive — when Claude says something odd about your code, check the rules.</p>
+    </section>
+
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-row">
+    <span>quality-loop 0.1.0 — MIT</span>
+    <a href="index.html">Overview</a>
+    <span class="muted">Documentation for the plugin in <code>dist/</code>.</span>
+  </div>
+</footer>
+
+<script>
+  // Mark the section currently in view in the table of contents.
+  (function () {
+    var links = Array.prototype.slice.call(document.querySelectorAll('.toc a'));
+    var map = {};
+    links.forEach(function (a) { map[a.getAttribute('href').slice(1)] = a; });
+
+    var sections = Array.prototype.slice.call(document.querySelectorAll('.guide-body section'));
+    if (!('IntersectionObserver' in window) || !sections.length) return;
+
+    var visible = new Set();
+
+    function mark(id) {
+      links.forEach(function (a) { a.classList.remove('active'); });
+      if (map[id]) map[id].classList.add('active');
+    }
+
+    function atBottom() {
+      return window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+    }
+
+    function sync() {
+      // The final section can never reach the detection band, because the page
+      // stops scrolling first. At the bottom, it is the one you are reading.
+      if (atBottom()) { mark(sections[sections.length - 1].id); return; }
+      var first = sections.find(function (s) { return visible.has(s.id); });
+      if (first) mark(first.id);
+    }
+
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) visible.add(e.target.id); else visible.delete(e.target.id);
+      });
+      sync();
+    }, { rootMargin: '-10% 0px -70% 0px', threshold: 0 });
+
+    sections.forEach(function (s) { io.observe(s); });
+    addEventListener('scroll', sync, { passive: true });
+  })();
+</script>
+
+</body>
+</html>
