@@ -4,7 +4,8 @@
   "version": "0.1.0",
   "description": "Verification-first working layer: hooks that gate edits on real syntax checks, reviewer agents that look at the rendered result, and skills for onboarding a repo, capturing references and running retros.",
   "author": {
-    "name": "Mario Cwejman"
+    "name": "Mario Cwejman",
+    "email": "172939500+MarioCwejman@users.noreply.github.com"
   },
   "keywords": [
     "verification",
@@ -13,5 +14,7 @@
     "onboarding",
     "hooks"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "homepage": "https://MarioCwejman.github.io/quality-loop/",
+  "repository": "https://github.com/MarioCwejman/quality-loop"
 }

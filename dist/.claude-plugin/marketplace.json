@@ -2,7 +2,8 @@
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "mario-cwejman",
   "owner": {
-    "name": "Mario Cwejman"
+    "name": "Mario Cwejman",
+    "email": "172939500+MarioCwejman@users.noreply.github.com"
   },
   "metadata": {
     "description": "Claude Code plugins by Mario Cwejman.",

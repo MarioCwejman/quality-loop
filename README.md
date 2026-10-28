@@ -10,8 +10,8 @@ knowledge where it survives past the session.
 The thing it is actually built to stop: Claude ending a turn saying something works when
 nothing has been run.
 
-**[Read the manual](https://GH_USER.github.io/quality-loop/guide.html)** — or the
-[overview](https://GH_USER.github.io/quality-loop/). Source in [`docs/`](docs/).
+**[Read the manual](https://MarioCwejman.github.io/quality-loop/guide.html)** — or the
+[overview](https://MarioCwejman.github.io/quality-loop/). Source in [`docs/`](docs/).
 
 ---
 
@@ -21,7 +21,7 @@ Requires [Node.js](https://nodejs.org) on your `PATH` for the hooks. Language ch
 optional — each is skipped when the tool is absent rather than failing.
 
 ```bash
-git clone https://github.com/GH_USER/quality-loop.git
+git clone https://github.com/MarioCwejman/quality-loop.git
 cd quality-loop
 claude plugin marketplace add ./dist
 claude plugin install quality-loop@mario-cwejman
