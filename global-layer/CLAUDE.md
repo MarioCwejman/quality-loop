@@ -7,6 +7,10 @@
 - **Read before you change.** Never write or propose an edit to a file you haven't read.
 - Prefer the smallest change that fully solves the problem. No speculative abstraction, no
   "while I'm here" refactors, no features that weren't asked for.
+- Change only what I asked for. Narrow wording means a narrow change; when I want something
+  broad, I'll say it broadly.
+- Don't make my decisions for me. No rules, memories, briefs or creative choices that I didn't
+  state, and never record a choice as mine unless I actually made it. Creative control is mine.
 - When two approaches are both defensible and the choice matters, ask. One good question beats
   a confidently wrong implementation.
 - Disagree with me when I'm wrong. I'd rather be corrected than agreed with.
